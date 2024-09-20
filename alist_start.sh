@@ -27,6 +27,18 @@ pull_image() {
 
 # 定义函数来安装alist
 install_alist() {
+    # 检查 Alist 容器是否存在
+    if docker ps -a --format '{{.Names}}' | grep -q '^alist$'; then
+        echo "Alist 容器已存在。"
+        read -p "是否删除现有的容器和镜像？这可能会删除所有数据，请做好备份。(y/n): " confirm
+        if [ "$confirm" = "y" ]; then
+            remove_alist_image
+        else
+            echo "安装已取消。"
+            exit 1
+        fi
+    fi
+
     echo "正在创建 /opt/alist 目录..."
     if mkdir -p /opt/alist; then
         echo "/opt/alist 目录创建成功。"
@@ -140,57 +152,59 @@ remove_alist_image() {
     fi
 }
 
-# 检查 Alist 容器是否存在
-if docker ps -a --format '{{.Names}}' | grep -q '^alist$'; then
-    echo "Alist 容器已存在。请先选择选项 4 删除现有的容器和镜像。"
-    echo "请选择一个操作："
-    echo "4. 删除 Alist 镜像"
-    echo "5. 退出"
-    read -p "请输入您的选择（4/5）：" choice
-    case $choice in
-        4)
-            remove_alist_image
-            ;;
-        5)
-            echo "退出脚本。"
-            exit 0
-            ;;
-        *)
-            echo "无效的选择，请输入 4 或 5。"
+# 定义函数来恢复默认用户名和密码
+reset_admin_credentials() {
+    # 检查 Alist 容器是否存在
+    if docker ps -a --format '{{.Names}}' | grep -q '^alist$'; then
+        echo "正在恢复默认用户名和密码..."
+        docker exec -it alist ./alist admin set admin
+        if [ $? -eq 0 ]; then
+            echo "恢复默认账号成功。"
+            echo "用户名: admin"
+            echo "密码: admin"
+        else
+            echo "恢复默认账号失败。"
             exit 1
-            ;;
-    esac
-else
-    # 显示菜单选项
-    echo "请选择一个操作："
-    echo "1. 安装 Alist"
-    echo "2. 更新 Alist"
-    echo "3. 卸载 Alist"
-    echo "4. 删除 Alist 镜像"
-    echo "5. 退出"
-    read -p "请输入您的选择（1/2/3/4/5）：" choice
+        fi
+    else
+        echo "Alist 容器不存在。"
+        exit 1
+    fi
+}
 
-    # 根据用户输入执行相应的操作
-    case $choice in
-        1)
-            install_alist
-            ;;
-        2)
-            update_alist
-            ;;
-        3)
-            uninstall_alist
-            ;;
-        4)
-            remove_alist_image
-            ;;
-        5)
-            echo "退出脚本。"
-            exit 0
-            ;;
-        *)
-            echo "无效的选择，请输入 1、2、3、4 或 5。"
-            exit 1
-            ;;
-    esac
-fi
+# 显示菜单选项
+echo "请选择一个操作："
+echo "1. 安装 Alist"
+echo "2. 更新 Alist"
+echo "3. 卸载 Alist"
+echo "4. 删除 Alist 镜像"
+echo "5. 恢复默认用户名和密码"
+echo "6. 退出"
+read -p "请输入您的选择（1/2/3/4/5/6）：" choice
+
+# 根据用户输入执行相应的操作
+case $choice in
+    1)
+        install_alist
+        ;;
+    2)
+        update_alist
+        ;;
+    3)
+        uninstall_alist
+        ;;
+    4)
+        remove_alist_image
+        ;;
+    5)
+        reset_admin_credentials
+        ;;
+    6)
+        echo "退出脚本。"
+        exit 0
+        ;;
+    *)
+        echo "无效的选择，请输入 1、2、3、4、5 或 6。"
+        exit 1
+        ;;
+esac
