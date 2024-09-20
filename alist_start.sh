@@ -48,8 +48,9 @@ install_alist() {
     echo "正在设置管理员用户名和密码为admin..."
     docker exec -it alist ./alist admin set admin
     if [ $? -eq 0 ]; then
-        echo "用户名:admin"
-        echo "密码:admin"
+        echo "用户名: admin"
+        echo "密码: admin"
+        echo "访问地址: 设备IP:5244"
     else
         echo "设置管理员用户名和密码失败。"
         exit 1
@@ -145,7 +146,8 @@ echo "1. 安装 Alist"
 echo "2. 更新 Alist"
 echo "3. 卸载 Alist"
 echo "4. 删除 Alist 镜像"
-read -p "请输入您的选择（1/2/3/4）：" choice
+echo "5. 退出"
+read -p "请输入您的选择（1/2/3/4/5）：" choice
 
 # 根据用户输入执行相应的操作
 case $choice in
@@ -161,8 +163,12 @@ case $choice in
     4)
         remove_alist_image
         ;;
+    5)
+        echo "退出脚本。"
+        exit 0
+        ;;
     *)
-        echo "无效的选择，请输入 1、2、3 或 4。"
+        echo "无效的选择，请输入 1、2、3、4 或 5。"
         exit 1
         ;;
 esac
