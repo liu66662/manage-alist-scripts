@@ -83,13 +83,4 @@ echo "3. 卸载 Alist"
 read -p "请输入您的选择（1/2/3）：" choice
 
 # 根据用户输入执行相应的操作
-case $choice in
-    1)
-        install_alist
-        ;;
-    2)
-        update_alist
-        ;;
-    3)
-        uninstall_alist
-        ;;
+case $choice
