@@ -11,6 +11,7 @@ pull_image() {
         if docker pull "${proxy}/xhofe/alist:latest"; then
             echo "从 $proxy 成功拉取 Alist 镜像。"
             docker tag "${proxy}/xhofe/alist:latest" xhofe/alist:latest
+            docker rmi "${proxy}/xhofe/alist:latest"
             image_pulled=true
             break
         else
@@ -23,6 +24,7 @@ pull_image() {
     fi
     return 0
 }
+
 
 # 定义函数来安装alist
 install_alist() {
