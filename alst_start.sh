@@ -1,3 +1,4 @@
+
 #!/bin/sh
 
 # 定义函数来安装alist
@@ -6,6 +7,20 @@ install_alist() {
     mkdir -p /opt/alist
     echo "正在启动 Alist 容器..."
     docker run -d --restart=unless-stopped -v /etc/alist:/opt/alist/data -p 5244:5244 -e PUID=0 -e PGID=0 -e UMASK=022 --name="alist" dockerpull.com/xhofe/alist:latest
+
+    # 等待容器启动
+    sleep 5
+
+  # 执行命令来设置管理员用户名和密码
+echo "正在设置管理员用户名和密码..."
+output=$(docker exec -it alist ./alist admin set admin)
+if [ $? -eq 0 ]; then
+    echo "用户名：admin"
+    echo "密码：admin"
+else
+    echo "设置管理员用户名和密码失败。"
+fi
+
     echo "Alist 已安装。"
 }
 
