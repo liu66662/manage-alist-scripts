@@ -25,7 +25,6 @@ pull_image() {
     return 0
 }
 
-
 # 定义函数来安装alist
 install_alist() {
     echo "正在创建 /opt/alist 目录..."
@@ -45,16 +44,16 @@ install_alist() {
     # 等待容器启动
     sleep 5
 
-# 设置管理员用户名和密码为admin
-echo "正在设置管理员用户名和密码为admin..."
-docker exec -it alist ./alist admin set admin
-if [ $? -eq 0 ]; then
-    echo "用户名:admin"
-    echo "密码:admin"
-else
-    echo "设置管理员用户名和密码失败。"
-    exit 1
-fi
+    # 设置管理员用户名和密码为admin
+    echo "正在设置管理员用户名和密码为admin..."
+    docker exec -it alist ./alist admin set admin
+    if [ $? -eq 0 ]; then
+        echo "用户名:admin"
+        echo "密码:admin"
+    else
+        echo "设置管理员用户名和密码失败。"
+        exit 1
+    fi
 
     echo "Alist 已安装。"
 }
@@ -103,12 +102,50 @@ uninstall_alist() {
     echo "Alist 已卸载。"
 }
 
+# 定义函数来删除 Alist 镜像
+remove_alist_image() {
+    echo "检查 Alist 容器状态..."
+
+    # 检查容器是否存在
+    if docker ps -a --format '{{.Names}}' | grep -q '^alist$'; then
+        echo "Alist 容器存在。"
+
+        # 检查容器是否正在运行
+        if docker ps --format '{{.Names}}' | grep -q '^alist$'; then
+            echo "正在停止 Alist 容器..."
+            if ! docker stop alist; then
+                echo "停止 Alist 容器失败。"
+                exit 1
+            fi
+        fi
+
+        # 删除容器
+        echo "正在删除 Alist 容器..."
+        if ! docker rm alist; then
+            echo "删除 Alist 容器失败。"
+            exit 1
+        fi
+    else
+        echo "Alist 容器不存在。"
+    fi
+
+    # 删除镜像
+    echo "正在删除 Alist 镜像..."
+    if docker rmi xhofe/alist:latest; then
+        echo "Alist 镜像已删除。"
+    else
+        echo "删除 Alist 镜像失败。"
+        exit 1
+    fi
+}
+
 # 显示菜单选项
 echo "请选择一个操作："
 echo "1. 安装 Alist"
 echo "2. 更新 Alist"
 echo "3. 卸载 Alist"
-read -p "请输入您的选择（1/2/3）：" choice
+echo "4. 删除 Alist 镜像"
+read -p "请输入您的选择（1/2/3/4）：" choice
 
 # 根据用户输入执行相应的操作
 case $choice in
@@ -121,8 +158,11 @@ case $choice in
     3)
         uninstall_alist
         ;;
+    4)
+        remove_alist_image
+        ;;
     *)
-        echo "无效的选择，请输入 1、2 或 3。"
+        echo "无效的选择，请输入 1、2、3 或 4。"
         exit 1
         ;;
 esac
