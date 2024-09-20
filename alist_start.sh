@@ -149,6 +149,12 @@ echo "4. 删除 Alist 镜像"
 echo "5. 退出"
 read -p "请输入您的选择（1/2/3/4/5）：" choice
 
+# 检查 Alist 容器是否存在
+if docker ps -a --format '{{.Names}}' | grep -q '^alist$'; then
+    echo "Alist 容器已存在。请先选择选项 4 删除现有的容器和镜像。"
+    exit 1
+fi
+
 # 根据用户输入执行相应的操作
 case $choice in
     1)
